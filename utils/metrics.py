@@ -44,6 +44,8 @@ def sla_breach_rate(df: pd.DataFrame) -> float:
     Percentage of *non-rejected* samples that breached the SLA.
     Rejected samples cannot be meaningfully classified on SLA.
     """
+    if "sla_breach" not in df.columns:
+        return 0.0
     active = df[df["sample_status"] != "Rejected"]
     n = len(active)
     if n == 0:
@@ -110,6 +112,9 @@ def lab_summary(df: pd.DataFrame) -> pd.DataFrame:
       - rejection_rate_pct
       - sla_breach_rate_pct
     """
+    if "lab_name" not in df.columns or df["lab_name"].isnull().all():
+        return pd.DataFrame()
+        
     g = df.groupby("lab_name", as_index=False)
 
     counts = g["sample_id"].count().rename(columns={"sample_id": "sample_count"})
@@ -128,7 +133,9 @@ def lab_summary(df: pd.DataFrame) -> pd.DataFrame:
     def _sla_rate(sub):
         active = sub[sub["sample_status"] != "Rejected"]
         n = len(active)
-        return round(active["sla_breach"].sum() / n * 100, 2) if n else 0.0
+        if "sla_breach" in sub.columns:
+            return round(active["sla_breach"].sum() / n * 100, 2) if n else 0.0
+        return 0.0
 
     rejections = (
         df.groupby("lab_name")
@@ -144,8 +151,9 @@ def lab_summary(df: pd.DataFrame) -> pd.DataFrame:
     result = counts.merge(tat, on="lab_name", how="left")
     result = result.merge(rejections, on="lab_name", how="left")
     result = result.merge(sla, on="lab_name", how="left")
-    result["avg_tat_hours"] = result["avg_tat_hours"].round(2)
+    result["avg_tat_hours"] = result["avg_tat_hours"].fillna(0.0).round(2)
     return result.sort_values("sample_count", ascending=False)
+
 
 
 # ---------------------------------------------------------------------------
@@ -160,16 +168,26 @@ def courier_summary(df: pd.DataFrame) -> pd.DataFrame:
       - delay_rate_pct  (transit > courier SLA)
       - on_time_rate_pct
     """
+    if "courier_name" not in df.columns or df["courier_name"].isnull().all():
+        return pd.DataFrame()
+        
     g = df.groupby("courier_name", as_index=False)
 
     counts = g["sample_id"].count().rename(columns={"sample_id": "sample_count"})
-    transit = g["courier_transit_hours"].mean().rename(
-        columns={"courier_transit_hours": "avg_transit_hours"}
-    )
+    
+    if "courier_transit_hours" in df.columns:
+        transit = g["courier_transit_hours"].mean().rename(
+            columns={"courier_transit_hours": "avg_transit_hours"}
+        )
+    else:
+        transit = pd.DataFrame({"courier_name": counts["courier_name"], "avg_transit_hours": 0.0})
 
     # Courier delay: transit_hours > sla_hours
     df = df.copy()
-    df["courier_delayed"] = df["courier_transit_hours"] > df["sla_hours"]
+    if "courier_transit_hours" in df.columns and "sla_hours" in df.columns:
+        df["courier_delayed"] = df["courier_transit_hours"] > df["sla_hours"]
+    else:
+        df["courier_delayed"] = False
 
     def _delay_rate(sub):
         n = len(sub)
@@ -183,7 +201,7 @@ def courier_summary(df: pd.DataFrame) -> pd.DataFrame:
 
     result = counts.merge(transit, on="courier_name", how="left")
     result = result.merge(delays, on="courier_name", how="left")
-    result["avg_transit_hours"] = result["avg_transit_hours"].round(2)
+    result["avg_transit_hours"] = result["avg_transit_hours"].fillna(0.0).round(2)
     result["on_time_rate_pct"] = (100 - result["delay_rate_pct"]).round(2)
     return result.sort_values("sample_count", ascending=False)
 
@@ -200,6 +218,9 @@ def test_type_summary(df: pd.DataFrame) -> pd.DataFrame:
       - rejection_rate_pct
       - is_critical_test
     """
+    if "test_name" not in df.columns or df["test_name"].isnull().all():
+        return pd.DataFrame()
+        
     g = df.groupby("test_name", as_index=False)
     counts = g["sample_id"].count().rename(columns={"sample_id": "sample_count"})
 
@@ -220,16 +241,20 @@ def test_type_summary(df: pd.DataFrame) -> pd.DataFrame:
         .reset_index(name="rejection_rate_pct")
     )
 
-    # Critical flag — take first value since it's static per test
-    critical = (
-        df.groupby("test_name", as_index=False)["is_critical_test"]
-        .first()
-    )
-
     result = counts.merge(tat, on="test_name", how="left")
     result = result.merge(rejections, on="test_name", how="left")
-    result = result.merge(critical, on="test_name", how="left")
-    result["avg_tat_hours"] = result["avg_tat_hours"].round(2)
+    
+    # Critical flag — take first value since it's static per test
+    if "is_critical_test" in df.columns:
+        critical = (
+            df.groupby("test_name", as_index=False)["is_critical_test"]
+            .first()
+        )
+        result = result.merge(critical, on="test_name", how="left")
+    else:
+        result["is_critical_test"] = False
+        
+    result["avg_tat_hours"] = result["avg_tat_hours"].fillna(0.0).round(2)
     return result.sort_values("sample_count", ascending=False)
 
 
