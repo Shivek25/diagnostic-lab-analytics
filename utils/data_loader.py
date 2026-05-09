@@ -48,17 +48,50 @@ _FILES = {
 
 
 def _ensure_data() -> None:
-    """Run generate_lab_data.py if any required CSV is missing."""
+    """Run generate_lab_data.py if any required CSV is missing.
+
+    On Streamlit Cloud or any environment where the generator script is
+    not available, this function exits gracefully instead of crashing.
+    """
     missing = [k for k, p in _FILES.items() if not p.exists()]
     if not missing:
         return
-    print(f"[data_loader] Missing files: {missing}. Running generate_lab_data.py …")
+
     gen_script = PROJECT_ROOT / "generate_lab_data.py"
     if not gen_script.exists():
-        raise FileNotFoundError(
-            "generate_lab_data.py not found. Please generate the data manually."
+        # Running on cloud or fresh clone without data — show a friendly error
+        try:
+            import streamlit as st  # noqa: PLC0415
+            st.error(
+                "⚠️ **Demo data not found.**\n\n"
+                "Run `python generate_lab_data.py` locally to generate the synthetic "
+                "CSV files, then re-deploy.\n\n"
+                "Alternatively, switch to **Upload Mode** in the sidebar to use your own data."
+            )
+            st.stop()
+        except Exception:
+            raise FileNotFoundError(
+                "Demo data CSV files are missing and generate_lab_data.py was not found. "
+                "Please run the data generator script before launching the dashboard."
+            )
+
+    print(f"[data_loader] Missing files: {missing}. Running generate_lab_data.py …")
+    try:
+        subprocess.run(
+            [sys.executable, str(gen_script)],
+            check=True,
+            cwd=str(PROJECT_ROOT),
         )
-    subprocess.run([sys.executable, str(gen_script)], check=True, cwd=str(PROJECT_ROOT))
+    except subprocess.CalledProcessError as exc:
+        try:
+            import streamlit as st  # noqa: PLC0415
+            st.error(
+                f"⚠️ **Data generation failed** (exit code {exc.returncode}).\n\n"
+                "Please run `python generate_lab_data.py` manually and restart the app."
+            )
+            st.stop()
+        except Exception:
+            raise
 
 
 def _parse_dt(df: pd.DataFrame, cols: list[str]) -> pd.DataFrame:
