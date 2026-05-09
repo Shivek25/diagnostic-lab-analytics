@@ -130,6 +130,12 @@ st.markdown(
 )
 
 # ═══════════════════════════════════════════════════════════════════════════
+# Constants
+# ═══════════════════════════════════════════════════════════════════════════
+APP_VERSION = "1.0.0"
+GITHUB_REPO = "https://github.com/Shivek25/DiagnosticLabOperationalAnalyticsSampleLogistics_Project"
+
+# ═══════════════════════════════════════════════════════════════════════════
 # Helpers
 # ═══════════════════════════════════════════════════════════════════════════
 BRAND_BLUE = "#00F2FE"
@@ -437,12 +443,83 @@ st.markdown(
             🏥 Lab Ops Analytics Dashboard {mode_badge}
         </h1>
         <p style="color:#94a3b8;margin:6px 0 0 0;font-size:0.92rem;">
-            Operational Intelligence for Diagnostic Labs
+            Operational Intelligence for Diagnostic Labs &nbsp;·&nbsp;
+            <span style="color:#475569;">v{APP_VERSION}</span>
         </p>
     </div>
     """,
     unsafe_allow_html=True,
 )
+
+# ── Welcome / Product Intro (shown once per session, collapsible) ──────────
+if not IS_UPLOAD_MODE and "welcome_dismissed" not in st.session_state:
+    with st.expander("👋 Welcome — Click to learn about this dashboard", expanded=True):
+        col_intro, col_steps = st.columns([3, 2])
+
+        with col_intro:
+            st.markdown(
+                """
+                ### What is this platform?
+                The **Diagnostic Lab Operational Analytics Dashboard** gives lab operations
+                managers a real-time intelligence layer over their sample logistics workflow —
+                from collection and courier transit to lab processing and report release.
+
+                > Built for private diagnostic lab chains that need operational visibility
+                > without waiting for BI reports.
+
+                #### 🔬 Demo Mode
+                Instantly explore the full dashboard using a rich synthetic dataset of
+                realistic lab samples, couriers, and performance metrics. No data upload required.
+
+                #### 📤 Upload Mode
+                Upload your own CSV/XLSX exports from any Lab Information System (LIS).
+                The schema mapper automatically aligns your columns to the dashboard's
+                internal model so analytics work out-of-the-box.
+                """
+            )
+
+        with col_steps:
+            st.markdown(
+                """
+                #### ⚡ How it works
+
+                **1. Choose a mode** in the sidebar
+                > Demo or Upload
+
+                **2. Apply filters** (optional)
+                > Date, City, Lab, Courier, Test type
+
+                **3. Explore the dashboard tabs:**
+                - 🚨 Alerts & Insights
+                - 📊 Executive Overview
+                - 🏥 Lab Performance
+                - 🚚 Courier Performance
+                - 🔬 Test Type Analytics
+                - 🗺 Sample Journey
+
+                **4. Export** filtered data or summary reports
+                """
+            )
+
+        st.divider()
+        st.markdown(
+            """
+            #### 💼 Business Value
+            | Insight | Benefit |
+            |---|---|
+            | Identify SLA breaches instantly | Protect client commitments |
+            | Monitor courier delay rates | Reduce transport bottlenecks |
+            | Track sample rejection patterns | Improve pre-analytics quality |
+            | Measure end-to-end TAT by test type | Optimize lab workflows |
+            """
+        )
+
+        st.button(
+            "✅ Got it — take me to the dashboard",
+            on_click=lambda: st.session_state.update({"welcome_dismissed": True}),
+            type="primary",
+            use_container_width=True,
+        )
 
 # ═══════════════════════════════════════════════════════════════════════════
 # Tabs
@@ -942,13 +1019,25 @@ with tab_journey:
 # ═══════════════════════════════════════════════════════════════════════════
 # Footer
 # ═══════════════════════════════════════════════════════════════════════════
-mode_str = "Upload Mode — Your Data" if IS_UPLOAD_MODE else "Demo Mode — Synthetic Data"
+_mode_str = "Upload Mode — Your Data" if IS_UPLOAD_MODE else "Demo Environment · Synthetic Data Enabled"
+_env_badge_style = "background:#1c1917;color:#a8a29e;" if IS_UPLOAD_MODE else "background:#172554;color:#93c5fd;"
 st.markdown(
     f"""
-    <div style="text-align:center;color:#475569;font-size:0.78rem;margin-top:40px;padding-top:16px;
-                border-top:1px solid #1e293b;">
-        Diagnostic Lab Operational Analytics · Powered by Streamlit &amp; Plotly ·
-        {mode_str} · <strong>No cloud dependencies</strong>
+    <div style="text-align:center;color:#475569;font-size:0.76rem;margin-top:48px;padding-top:20px;
+                border-top:1px solid #1e293b;line-height:2.2;">
+        <strong style="color:#64748b;">🧪 Diagnostic Lab Operational Analytics Platform</strong>
+        &nbsp;·&nbsp;
+        <span style="color:#475569;">v{APP_VERSION}</span>
+        &nbsp;·&nbsp; Built for operational analytics in diagnostic labs
+        <br/>
+        <span style="{_env_badge_style}border-radius:6px;padding:2px 10px;font-size:0.74rem;">
+            {_mode_str}
+        </span>
+        &nbsp;
+        <a href="{GITHUB_REPO}" target="_blank"
+           style="color:#38bdf8;text-decoration:none;">GitHub ↗</a>
+        &nbsp;·&nbsp;
+        <span style="color:#334155;">Powered by Streamlit &amp; Plotly</span>
     </div>
     """,
     unsafe_allow_html=True,
