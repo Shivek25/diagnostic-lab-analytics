@@ -130,6 +130,13 @@ E2E_DataEngineeringProject/
 │   ├── data_loader.py                    #    Loads & merges all CSV files
 │   └── metrics.py                        #    Core KPI calculation functions
 │
+├── docs/                                 # 📚 Extensive Project Documentation
+│   ├── project_report.docx               #    Detailed Business & Technical Report
+│   ├── client_pitch.md                   #    Client-focused presentation material
+│   ├── architecture.md                   #    Application architecture details
+│   ├── faq.md                            #    Frequently Asked Questions
+│   └── deployment.md                     #    Application Deployment Guide
+│
 ├── Diagnostic Lab Operational Analytics Sample Logistics Project/
 │   └── data/
 │       ├── raw/                          # sample_manifest, courier_events, lab_processing
@@ -148,6 +155,16 @@ E2E_DataEngineeringProject/
 ├── Lab Ops Analytics Dashboard.pbix      # Power BI Dashboard
 └── README.md                             # This file
 ```
+
+---
+
+## 📚 Documentation
+
+Detailed documentation and presentations have been prepared for this project:
+- 📄 **[Project Report](./docs/project_report.docx):** Complete end-to-end breakdown of the business problem, solution, features, and technical architecture.
+- 💬 **[Client Pitch](./docs/client_pitch.md):** Pitch material outlining value proposition and business outcomes.
+- 🏗️ **[Architecture](./docs/architecture.md):** Application architecture and data workflows.
+- ❓ **[FAQ](./docs/faq.md):** Common questions regarding data ingestion, security, and schema matching.
 
 ---
 
