@@ -4,6 +4,7 @@ An end-to-end data engineering and analytics solution designed for private diagn
 
 By unifying fragmented operational data, this project provides a single consolidated view to monitor delays, identify bottlenecks, measure turnaround times, and improve overall operational reliability.
 
+- [Live Demo](https://labops-insights.streamlit.app/)
 ---
 
 ## 🚀 Project Overview
