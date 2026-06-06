@@ -2,8 +2,8 @@ name: Keep Streamlit App Awake
 
 on:
   schedule:
-    # Runs every 4 hours (At minute 0 past every 6th hour)
-    - cron: '0 */4 * * *'
+    # Runs every 5 hours (At minute 0 past every 6th hour)
+    - cron: '0 */5 * * *'
   # Allows you to manually trigger the action from the GitHub Actions tab
   workflow_dispatch:
 
